@@ -37,7 +37,7 @@ Open `torch/nn/functional.py` and find the line with `torch.batch_norm` and repl
 
 
 ## Train
-### COCO
+### PSR Dataset
 #### single GPU or multi GPU using nn.DataParallel
 ```
 python train.py --log_name psr_hg_512_dp \                                    train
@@ -50,3 +50,19 @@ python train.py --log_name psr_hg_512_dp \                                    tr
 ```
 
 ## Evaluate
+mkdir -p ~/Reconst/Data/PSR/Simple/train
+mkdir -p ~/Reconst/Data/PSR/Simple/val
+cd ~/Reconst/Data/PSR/Simple
+ls -d */ | grep -vE 'train|val' | shuf > all_samples.txt
+head -n 120 all_samples.txt > train_samples.txt
+tail -n +121 all_samples.txt > val_samples.txt
+cat train_samples.txt | xargs -I{} mv {} train/
+cat val_samples.txt | xargs -I{} mv {} val/
+
+python train.py --log_name hrnet \
+                --data_dir ~/Reconst/Data/PSR/Simple \
+                --arch hrnet \
+                --lr 5e-4 \
+                --lr_step 90,180 \
+                --batch_size 4 \
+                --num_epochs 90 --num_workers 0 --log_interval 10
